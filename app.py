@@ -1,4 +1,4 @@
-# KR2: Bosarev
+# KR2: bosarev
 import os
 import socket
 

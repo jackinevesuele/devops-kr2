@@ -17,9 +17,11 @@ redis_healthy() {
 }
 app_loopback() { test "$(docker compose port app 8002)" = '127.0.0.1:8002'; }
 redis_unpublished() {
-    local binding
-    binding="$(docker compose port redis 6379 2>/dev/null)" || binding=''
-    test -z "$binding" || test "$binding" = ':0'
+    local cid binding
+    cid="$(docker compose ps -q redis)" || return 1
+    test -n "$cid" || return 1
+    binding="$(docker inspect -f '{{range $port, $bindings := .NetworkSettings.Ports}}{{if $bindings}}{{$port}}{{end}}{{end}}' "$cid")" || return 1
+    test -z "$binding"
 }
 env_mode() { test "$(stat -c '%a' .env)" = 600; }
 app_nonroot() { docker compose exec -T app python -c 'import os,sys;sys.exit(os.getuid()==0)'; }
